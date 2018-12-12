@@ -12,8 +12,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,11 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class TestLoginPage {
     List<PageObjectModel> pageObjectModelList = new ArrayList<PageObjectModel>(); //record tags
@@ -45,8 +42,20 @@ public class TestLoginPage {
     private final String packageName = "webpages";
     private final String className = "LoginPage";
 
+    private final String resultFilePath = "./generatedCode/Result.txt";
+    private final String existingMethodsFilePath = "./generatedCode/ExistingMethods.txt";
+    private final String usedMethodsFilePath = "./generatedCode/UsedMethods.txt";
+
+    private List<String> originalMethodNames;
+    private List<String> newMethodNames;
+
     @Test
-    public void initializeFields() throws IOException, InterruptedException, ExecutionException {
+    public void initializeFields() throws IOException, InterruptedException, ExecutionException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(existingMethodsFilePath, false));
+        // get a list of existing locators
+        originalMethodNames = getMethodNames(getLoginPageWithDriver(false));
+        writeToTextFile(writer, originalMethodNames);
+
         initializePOMList();
 
         pageObjectGenerator = new PageObjectGenerator(packageName, className, pageObjectModelList,
@@ -60,10 +69,15 @@ public class TestLoginPage {
         pageObjectGenerator.compile();
 
         copyGeneratedFiles();
+        /*  compare the new locators with the earlier ones
+            - if the locator is just updated (order of locator and suffix is same),
+             update automation method references and generate the list
+            - if a locator is added or removed, then just generate the list
+        */
     }
 
     @Test
-    public void initializeMethods() throws NoSuchMethodException, IllegalAccessException, InstantiationException, IOException, InvocationTargetException, ClassNotFoundException, InterruptedException, ExecutionException {
+    public void initializeMethods() throws IOException, InterruptedException, ExecutionException {
         loginPage = getLoginPage();
 
         initializePOMList();
@@ -76,15 +90,137 @@ public class TestLoginPage {
     }
 
     @Test
-    public void valdiateLogin() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, MalformedURLException, ClassNotFoundException {
-        loginPage = getLoginPageWithDriver();
+    public void valdiateLogin() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, IOException, ClassNotFoundException {
+        loginPage = getLoginPageWithDriver(true);
+        newMethodNames = getMethodNames(loginPage);
+        originalMethodNames = readFromTextFile();
+        Map<String, String> updatedMethodNames = compareMethods(originalMethodNames, newMethodNames);
+        List<String> usedMethods = readAllUsedMethods();
 
-        Method typeUserName = loginPage.getClass().getMethod("fill_username__Txt", String.class);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(usedMethodsFilePath, false));
+        String typeUserNameMethod;
+        if (updatedMethodNames.containsKey(usedMethods.get(0))) {
+            typeUserNameMethod = updatedMethodNames.get(usedMethods.get(0));
+        } else {
+            typeUserNameMethod = usedMethods.get(0);
+        }
+        writer.append(typeUserNameMethod);
+        writer.newLine();
+        Method typeUserName = loginPage.getClass().getMethod(typeUserNameMethod, String.class);
         typeUserName.invoke(loginPage, "pradhan");
-        Method typePassword = loginPage.getClass().getMethod("fill_password__Txt", String.class);
+
+        String typePasswordMethod;
+        if (updatedMethodNames.containsKey(usedMethods.get(1))) {
+            typePasswordMethod = updatedMethodNames.get(usedMethods.get(1));
+        } else {
+            typePasswordMethod = usedMethods.get(1);
+        }
+        writer.append(typePasswordMethod);
+        writer.newLine();
+        Method typePassword = loginPage.getClass().getMethod(typePasswordMethod, String.class);
         typePassword.invoke(loginPage, "pradhan");
-        Method clickLogin = loginPage.getClass().getMethod("click_login_bu_Btn");
+
+        String clickLoginMethod;
+        if (updatedMethodNames.containsKey(usedMethods.get(2))) {
+            clickLoginMethod = updatedMethodNames.get(usedMethods.get(2));
+        } else {
+            clickLoginMethod = usedMethods.get(2);
+        }
+        writer.append(clickLoginMethod);
+        writer.newLine();
+        Method clickLogin = loginPage.getClass().getMethod(clickLoginMethod);
         clickLogin.invoke(loginPage);
+
+        writer.close();
+    }
+
+    private List<String> readAllUsedMethods() throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(usedMethodsFilePath));
+        List<String> methodNames = new ArrayList<>();
+        String strCurrentLine;
+        while ((strCurrentLine = reader.readLine()) != null) {
+            methodNames.add(strCurrentLine);
+        }
+        return methodNames;
+    }
+
+    private List<String> readFromTextFile() throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(existingMethodsFilePath));
+        List<String> methodNames = new ArrayList<>();
+        String strCurrentLine;
+        while ((strCurrentLine = reader.readLine()) != null) {
+            methodNames.add(strCurrentLine);
+        }
+        return methodNames;
+    }
+
+    private void writeToTextFile(BufferedWriter writer, List<String> originalMethodNames) throws IOException {
+        for (String methodName : originalMethodNames) {
+            writer.append(methodName);
+            writer.newLine();
+        }
+        writer.close();
+    }
+
+    private Map<String, String> compareMethods(List<String> originalMethodNames, List<String> newMethodNames) {
+        BufferedWriter writer = null;
+        Map<String, String> updatedMethodNames = new HashMap<>();
+
+        List<String> origMethodsRemoved = new ArrayList<>(originalMethodNames);
+        origMethodsRemoved.removeAll(new HashSet<>(newMethodNames));
+
+        List<String> newMethodsAdded = new ArrayList<>(newMethodNames);
+        newMethodsAdded.removeAll(new HashSet<>(originalMethodNames));
+        try {
+            writer = new BufferedWriter(new FileWriter(resultFilePath, false));
+            writer.append("Methods modified:");
+            writer.newLine();
+            for (int i = 0; i < origMethodsRemoved.size(); i++) {
+                if (i <= newMethodsAdded.size()) {
+                    String[] oldMethodsBits = origMethodsRemoved.get(i).split("_");
+                    String[] newMethodsBits = newMethodsAdded.get(i).split("_");
+                    if (oldMethodsBits[oldMethodsBits.length - 1].equals(newMethodsBits[newMethodsBits.length - 1])) {
+                        // TODO: update automation and text file
+                        writer.append(origMethodsRemoved.get(i) + " method name modified to: " + newMethodsAdded.get(i));
+                        writer.newLine();
+                        updatedMethodNames.put(origMethodsRemoved.get(i), newMethodsAdded.get(i));
+                        origMethodsRemoved.remove(i);
+                        newMethodsAdded.remove(i);
+                    }
+                }
+            }
+            /* Update text file with:
+                - origMethodsRemoved
+                - newMethodsAddedpagene
+            */
+
+            writer = new BufferedWriter(new FileWriter(resultFilePath, true));
+            writer.append("Methods removed:");
+            writer.newLine();
+            for (String method : origMethodsRemoved) {
+                writer.append(method);
+                writer.newLine();
+            }
+            writer.append("Methods added:");
+            writer.newLine();
+            for (String method : newMethodsAdded) {
+                writer.append(method);
+                writer.newLine();
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return updatedMethodNames;
+    }
+
+    private List<String> getMethodNames(Object object) {
+        if (object != null) {
+            return Arrays.stream(object.getClass().getMethods())
+                    .map(Method::getName)
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 
     private void copyGeneratedFiles() throws IOException {
@@ -194,17 +330,24 @@ public class TestLoginPage {
         }
     }
 
-    private Object getLoginPage() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MalformedURLException {
-        Class<?> clazz = Class.forName("webpages.LoginPage");
-        Constructor<?> ctor = clazz.getConstructor();
-        Object object = ctor.newInstance(new Object[]{});
-
+    private Object getLoginPage() {
+        Class<?> clazz = null;
+        Object object;
+        try {
+            clazz = Class.forName("webpages.LoginPage");
+            Constructor<?> ctor = clazz.getConstructor();
+            object = ctor.newInstance(new Object[]{});
+        } catch (Exception e) {
+            return null;
+        }
         return object;
     }
 
-    private Object getLoginPageWithDriver() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MalformedURLException {
+    private Object getLoginPageWithDriver(boolean isWebdriverInitialized) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MalformedURLException {
         Class<?> clazz = Class.forName("webpages.LoginPage");
-        initializeWebdriver();
+        if (isWebdriverInitialized) {
+            initializeWebdriver();
+        }
         Constructor<?> ctor = clazz.getConstructor(WebDriver.class);
         Object object = ctor.newInstance(new Object[]{webDriver});
 

@@ -98,9 +98,9 @@ public class PageObjectGenerator {
             TagAttribute tagAttribute = pom.getTagAttribute();
             String fieldName = "";
             if (pom.getTagType() != null) {
-                fieldName = pom.getTagValue().replaceAll("[^\\w\\s\\_]", "") + "_" + pom.getTagType();
+                fieldName = pom.getTagValue().replaceAll("[^a-zA-Z0-9]", "") + "_" + pom.getTagType();
             } else {
-                fieldName = pom.getTagValue().replaceAll("[^\\w\\s\\_]", "");
+                fieldName = pom.getTagValue().replaceAll("[^a-zA-Z0-9]", "");
             }
             if (tagAttribute == TagAttribute.id) {
                 outPageCode.newLine();
@@ -170,7 +170,7 @@ public class PageObjectGenerator {
         outPageCode.write("WebDriver driver;");
         outPageCode.newLine();
 
-        outPageCode.write("public LoginPage(WebDriver webDriver) { driver = webDriver;  }");
+        outPageCode.write("public " + className + "(WebDriver webDriver) { driver = webDriver;  }");
         outPageCode.newLine();
 
         outPageCode.close();

@@ -22,7 +22,75 @@ By htmlbodyformtabletbodytr2 =  By.xpath("/html/body/form/table/tbody/tr[2]");
 By Password_label =  By.linkText("Password");
 By htmlbodyformtabletbodytr2td2 =  By.xpath("/html/body/form/table/tbody/tr[2]/td[2]");
 By password_text =  By.id("password");
-By login_error =  By.linkText("${login_error}");
+By loginerror =  By.linkText("${login_error}");
 By login_button =  By.id("login");
+WebDriver driver;
+public LoginPage(WebDriver webDriver) { driver = webDriver;  }
+
+public void click_Signup__Lnk(){
+driver.findElement(Signup_link).click();
+}
+
+public String getLinkText_Signup__Lnk(){
+return driver.findElement(Signup_link).getText();
+}
+
+public void click_Username_l_Lbl(){
+driver.findElement(Username_label).click();
+}
+
+public String getLabelText_Username_l_Lbl(){
+return driver.findElement(Username_label).getText();
+}
+
+public void fill_username__Txt(String inputdata){
+if(inputdata.trim().length()==0){
+clear_username__Txt();return;}
+driver.findElement(username_text).clear();
+driver.findElement(username_text).sendKeys(inputdata);
+}
+
+public  void clear_username__Txt(){
+driver.findElement(username_text).clear();
+}
+
+public  void click_username__Txt(){
+driver.findElement(username_text).click();
+}
+
+public String getText_username__Txt(){
+return driver.findElement(username_text).getAttribute("value");
+}
+
+public void click_Password_l_Lbl(){
+driver.findElement(Password_label).click();
+}
+
+public String getLabelText_Password_l_Lbl(){
+return driver.findElement(Password_label).getText();
+}
+
+public void fill_password__Txt(String inputdata){
+if(inputdata.trim().length()==0){
+clear_password__Txt();return;}
+driver.findElement(password_text).clear();
+driver.findElement(password_text).sendKeys(inputdata);
+}
+
+public  void clear_password__Txt(){
+driver.findElement(password_text).clear();
+}
+
+public  void click_password__Txt(){
+driver.findElement(password_text).click();
+}
+
+public String getText_password__Txt(){
+return driver.findElement(password_text).getAttribute("value");
+}
+
+public void click_login_bu_Btn(){
+driver.findElement(login_button).click();
+}
 
  }
