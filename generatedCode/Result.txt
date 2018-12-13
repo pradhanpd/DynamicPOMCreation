@@ -1,3 +1,7 @@
-fill_username__Txt
-fill_password__Txt
-click_login_bu_Btn
+Methods modified:
+click_login_bu_Btn method name modified to: click_submit_bu_Btn
+Methods removed:
+select_conditions_chec_Chk
+isChecked_conditions_chec_Chk
+deSelect_conditions_chec_Chk
+Methods added:

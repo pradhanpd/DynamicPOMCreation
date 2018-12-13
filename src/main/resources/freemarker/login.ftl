@@ -40,8 +40,8 @@
         </tr>
 
       </table>
-
-      <input type="submit" id="login" name="submit">
+      <input type="submit" name="submit">
+      <!-- <input type="checkbox" name="conditions" checked> I agree to the terms and conditions -->
     </form>
   </body>
 

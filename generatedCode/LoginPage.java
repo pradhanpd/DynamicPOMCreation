@@ -23,7 +23,7 @@ By Password_label =  By.linkText("Password");
 By htmlbodyformtabletbodytr2td2 =  By.xpath("/html/body/form/table/tbody/tr[2]/td[2]");
 By password_text =  By.id("password");
 By loginerror =  By.linkText("${login_error}");
-By login_button =  By.id("login");
+By submit_button =  By.name("submit");
 WebDriver driver;
 public LoginPage(WebDriver webDriver) { driver = webDriver;  }
 
@@ -89,8 +89,8 @@ public String getText_password__Txt(){
 return driver.findElement(password_text).getAttribute("value");
 }
 
-public void click_login_bu_Btn(){
-driver.findElement(login_button).click();
+public void click_submit_bu_Btn(){
+driver.findElement(submit_button).click();
 }
 
  }

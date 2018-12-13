@@ -176,19 +176,21 @@ public class TestLoginPage {
             writer.append("Methods modified:");
             writer.newLine();
             for (int i = 0; i < origMethodsRemoved.size(); i++) {
-                if (i <= newMethodsAdded.size()) {
+                for (int j = 0; j < newMethodsAdded.size(); j++) {
                     String[] oldMethodsBits = origMethodsRemoved.get(i).split("_");
-                    String[] newMethodsBits = newMethodsAdded.get(i).split("_");
+                    String[] newMethodsBits = newMethodsAdded.get(j).split("_");
                     if (oldMethodsBits[oldMethodsBits.length - 1].equals(newMethodsBits[newMethodsBits.length - 1])) {
                         // TODO: update automation and text file
-                        writer.append(origMethodsRemoved.get(i) + " method name modified to: " + newMethodsAdded.get(i));
+                        writer.append(origMethodsRemoved.get(i) + " method name modified to: " + newMethodsAdded.get(j));
                         writer.newLine();
-                        updatedMethodNames.put(origMethodsRemoved.get(i), newMethodsAdded.get(i));
+                        updatedMethodNames.put(origMethodsRemoved.get(i), newMethodsAdded.get(j));
                         origMethodsRemoved.remove(i);
-                        newMethodsAdded.remove(i);
+                        newMethodsAdded.remove(j);
                     }
                 }
             }
+            writer.newLine();
+            writer.close();
             /* Update text file with:
                 - origMethodsRemoved
                 - newMethodsAddedpagene
@@ -201,12 +203,14 @@ public class TestLoginPage {
                 writer.append(method);
                 writer.newLine();
             }
+            writer.newLine();
             writer.append("Methods added:");
             writer.newLine();
             for (String method : newMethodsAdded) {
                 writer.append(method);
                 writer.newLine();
             }
+            writer.newLine();
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -219,6 +223,11 @@ public class TestLoginPage {
             return Arrays.stream(object.getClass().getMethods())
                     .map(Method::getName)
                     .collect(Collectors.toList());
+//            List<String> methodNames = new ArrayList<>();
+//            for (Method method : object.getClass().getMethods()) {
+//                methodNames.add(method.getName());
+//            }
+//            return methodNames;
         }
         return null;
     }
@@ -270,6 +279,8 @@ public class TestLoginPage {
                 pom.setTagType(TagType.label);
             } else if (e.tagName().equals("a")) {
                 pom.setTagType(TagType.link);
+            } else if (e.tagName().equals("button")) {
+                pom.setTagType(TagType.button);
             }
 
             // for each tag get all attributes
@@ -291,6 +302,8 @@ public class TestLoginPage {
                             pom.setTagType(TagType.text);
                         } else if (attributeValue.equals("submit") || attributeValue.equals("button")) {
                             pom.setTagType(TagType.button);
+                        } else if (attributeValue.equals("checkbox")) {
+                            pom.setTagType(TagType.checkbox);
                         }
                         break;
                     default:
