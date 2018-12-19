@@ -11,8 +11,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 public class PageObjectGenerator {
-    private final String pageObjectMethodsClassPath;
-    private final String pageObjectMethodsFilePath;
+    private String pageObjectMethodsClassPath;
+    private String pageObjectMethodsFilePath;
+    private String pageObjectMethodsJSFilePath;
     private static BufferedWriter outPageCode = null;
 
     private String packageName;
@@ -28,6 +29,12 @@ public class PageObjectGenerator {
         this.pageObjectModelList = pageObjectModelList;
         this.pageObjectMethodsClassPath = pageObjectMethodsClassPath;
         this.pageObjectMethodsFilePath = pageObjectMethodsFilePath;
+    }
+
+    public PageObjectGenerator(String className, List<PageObjectModel> pageObjectModelList, String pageObjectMethodsJSFilePath) {
+        this.className = className;
+        this.pageObjectModelList = pageObjectModelList;
+        this.pageObjectMethodsJSFilePath = pageObjectMethodsJSFilePath;
     }
 
     public void start() throws IOException {
@@ -50,6 +57,15 @@ public class PageObjectGenerator {
         outPageCode.newLine();
         outPageCode.newLine();
         outPageCode.write("public class " + className + " {");
+        outPageCode.newLine();
+
+        outPageCode.close();
+    }
+
+    public void startJS() throws IOException {
+        clearJSFile();
+        outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, true));
+        outPageCode.write("var " + className + "PageObject = function() {");
         outPageCode.newLine();
 
         outPageCode.close();
@@ -91,6 +107,15 @@ public class PageObjectGenerator {
         outPageCode.close();
     }
 
+    public void endJS() throws IOException {
+        outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, true));
+        outPageCode.newLine();
+        outPageCode.write(" };");
+        outPageCode.newLine();
+        outPageCode.write("module.exports = new " + className + "PageObject();");
+        outPageCode.close();
+    }
+
     public void generatePageFields() throws IOException {
         outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsFilePath, true));
 
@@ -118,6 +143,38 @@ public class PageObjectGenerator {
         }
         outPageCode.newLine();
         outPageCode.close();
+    }
+
+    private List<String> generateJSPageFields() throws IOException {
+        outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, true));
+
+        List<String> fieldNames = new ArrayList<>();
+        for (PageObjectModel pom : pageObjectModelList) {
+            TagAttribute tagAttribute = pom.getTagAttribute();
+            String fieldName = "";
+            if (pom.getTagType() != null) {
+                fieldName = pom.getTagValue().replaceAll("[^a-zA-Z0-9]", "") + "_" + pom.getTagType();
+            } else {
+                fieldName = pom.getTagValue().replaceAll("[^a-zA-Z0-9]", "");
+            }
+            fieldNames.add(fieldName);
+            if (tagAttribute == TagAttribute.id) {
+                outPageCode.newLine();
+                outPageCode.write("this." + fieldName + " = " + "element(by.id(\'" + pom.getTagValue() + "\'));");
+            } else if (tagAttribute == TagAttribute.name) {
+                outPageCode.newLine();
+                outPageCode.write("this." + fieldName + " = " + "element(by.name(\'" + pom.getTagValue() + "\'));");
+            } else if (tagAttribute == TagAttribute.linktext) {
+                outPageCode.newLine();
+                outPageCode.write("this." + fieldName + " = " + "element(by.linkText(\'" + pom.getTagValue() + "\'));");
+            } else if (tagAttribute == TagAttribute.xpath) {
+                outPageCode.newLine();
+                outPageCode.write("this." + fieldName + " = " + "element(by.xpath(\'" + pom.getTagValue() + "\'));");
+            }
+        }
+        outPageCode.newLine();
+        outPageCode.close();
+        return fieldNames;
     }
 
     /**
@@ -164,6 +221,31 @@ public class PageObjectGenerator {
         compile();
     }
 
+    public void generateJSPage() throws IOException {
+        startJS();
+
+        List<String> fieldNames = generateJSPageFields();
+
+        for (String fieldName : fieldNames) {
+            System.out.println(fieldName);
+
+            if (fieldName.endsWith("_text")) {
+                addJSTextBoxMethods(fieldName);
+            }
+            if (fieldName.endsWith("_checkbox")) {
+                addJSCheckBoxMethods(fieldName);
+            }
+            if (fieldName.endsWith("_link")) {
+                addJSLinkMethods(fieldName);
+            }
+            if (fieldName.endsWith("_button")) {
+                addJSButtonMethods(fieldName);
+            }
+        }
+
+        endJS();
+    }
+
     private void generatePageConstructor() throws IOException {
         outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsFilePath, true));
 
@@ -184,11 +266,127 @@ public class PageObjectGenerator {
         outPageCode.close();
     }
 
+    private void clearJSFile() throws IOException {
+        outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, false));
+        outPageCode.close();
+    }
+
     /**
      * TO generate code for Text boxes
      *
      * @param fieldName String
      */
+    private void addJSTextBoxMethods(String fieldName) throws IOException {
+        String labelName = fieldName.substring(0, fieldName.length() - 4);
+
+        outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, true));
+
+        List<String> methodType = getMethodTypesToBeGenerated("textBox");
+        if (methodType.contains("fill")) {
+            //********Fill**************************
+            outPageCode.newLine();
+            outPageCode.write("this.fill_" + labelName + "_Txt = function(value){");
+            outPageCode.newLine();
+
+            outPageCode.write("this." + fieldName + ".clear();");
+            outPageCode.newLine();
+            outPageCode.write("this." + fieldName + ".sendKeys(value);");
+            outPageCode.newLine();
+            outPageCode.write("};");
+            outPageCode.newLine();
+        }
+        outPageCode.close();
+    }
+
+    /**
+     * TO generate code for Dropdown
+     *
+     * @param fieldName String
+     */
+
+    /**
+     * TO generate code for Check box
+     *
+     * @param fieldName String
+     */
+    private void addJSCheckBoxMethods(String fieldName) throws IOException {
+
+        //out= null;
+        String labelName = fieldName.substring(0, fieldName.length() - 4);
+        outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, true));
+
+        List<String> methodType = getMethodTypesToBeGenerated("checkBox");
+        //****************************Select Checkbox****************************
+        if (methodType.contains("select")) {
+            outPageCode.newLine();
+            outPageCode.write("this.select_" + labelName + "_Chk = function() {");
+            outPageCode.newLine();
+
+            outPageCode.write("this." + fieldName + ".click();");
+            outPageCode.newLine();
+            outPageCode.write("};");
+            outPageCode.newLine();
+        }
+        outPageCode.close();
+    }
+
+    /**
+     * TO generate code for Link
+     *
+     * @param fieldName String
+     * @throws IOException if particular file path is not available
+     */
+    private void addJSLinkMethods(String fieldName) throws IOException {
+        //out= null;
+
+        String labelName = fieldName.substring(0, fieldName.length() - 4);
+        outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, true));
+
+        List<String> methodType = getMethodTypesToBeGenerated("link");
+        //********************************Link Click
+        if (methodType.contains("click")) {
+            outPageCode.newLine();
+            outPageCode.write("this.click_" + labelName + "_Lnk = function() {");
+            outPageCode.newLine();
+
+            outPageCode.write("this." + fieldName + ".click();");
+            outPageCode.newLine();
+            outPageCode.write("};");
+            outPageCode.newLine();
+        }
+
+        outPageCode.close();
+    }
+
+    /**
+     * TO generate code for button
+     *
+     * @param fieldName String
+     * @throws IOException if particular file path is not available
+     */
+    private void addJSButtonMethods(String fieldName) throws IOException {
+        //out= null;
+
+        String labelName = fieldName.substring(0, fieldName.length() - 4);
+
+        List<String> methodType = getMethodTypesToBeGenerated("button");
+        //********************************Button Click
+        if (methodType.contains("click")) {
+            outPageCode = new BufferedWriter(new FileWriter(pageObjectMethodsJSFilePath, true));
+
+            outPageCode.newLine();
+            outPageCode.write("this_" + labelName + "_Btn = function() {");
+            outPageCode.newLine();
+
+
+            outPageCode.write("this." + fieldName + ".click();");
+            outPageCode.newLine();
+            outPageCode.write("};");
+            outPageCode.newLine();
+        }
+        outPageCode.close();
+    }
+
     private void addTextBoxMethods(String fieldName) throws IOException {
         //out= null;
 

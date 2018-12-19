@@ -33,6 +33,7 @@ public class TestLoginPage {
 
     private final String pageObjectMethodsClassPath = "./generatedCode/";
     private final String pageObjectMethodsFilePath = "./generatedCode/LoginPage.java";
+    private final String pageObjectMethodsJSFilePath = "./generatedCode/LoginPage.js";
 
     private final String sourceFilePath = "./generatedCode/LoginPage.java";
     private final String sourceClassPath = "./generatedCode/webpages/LoginPage.class";
@@ -48,6 +49,14 @@ public class TestLoginPage {
 
     private List<String> originalMethodNames;
     private List<String> newMethodNames;
+
+    @Test
+    public void generateJSPOM() throws IOException {
+        initializePOMList();
+
+        pageObjectGenerator = new PageObjectGenerator(className, pageObjectModelList, pageObjectMethodsJSFilePath);
+        pageObjectGenerator.generateJSPage();
+    }
 
     @Test
     public void initializeFields() throws IOException, InterruptedException, ExecutionException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {

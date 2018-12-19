@@ -10,7 +10,7 @@ By htmlheadstyle =  By.xpath("/html/head/style");
 By Signup_link =  By.linkText("Signup");
 By htmlbodyp =  By.xpath("/html/body/p");
 By Login =  By.linkText("Login");
-By htmlbodyform =  By.xpath("/html/body/form");
+By Iagreetothetermsandconditions =  By.linkText("I agree to the terms and conditions");
 By htmlbodyformtable =  By.xpath("/html/body/form/table");
 By htmlbodyformtabletbody =  By.xpath("/html/body/form/table/tbody");
 By htmlbodyformtabletbodytr =  By.xpath("/html/body/form/table/tbody/tr");
@@ -23,7 +23,8 @@ By Password_label =  By.linkText("Password");
 By htmlbodyformtabletbodytr2td2 =  By.xpath("/html/body/form/table/tbody/tr[2]/td[2]");
 By password_text =  By.id("password");
 By loginerror =  By.linkText("${login_error}");
-By submit_button =  By.name("submit");
+By login_button =  By.id("login");
+By conditions_checkbox =  By.name("conditions");
 WebDriver driver;
 public LoginPage(WebDriver webDriver) { driver = webDriver;  }
 
@@ -89,8 +90,24 @@ public String getText_password__Txt(){
 return driver.findElement(password_text).getAttribute("value");
 }
 
-public void click_submit_bu_Btn(){
-driver.findElement(submit_button).click();
+public void click_login_bu_Btn(){
+driver.findElement(login_button).click();
+}
+
+public void select_conditions_chec_Chk(){
+if(driver.findElement(conditions_checkbox).isSelected()){}else{
+driver.findElement(conditions_checkbox).click();
+}
+}
+
+public void deSelect_conditions_chec_Chk(){
+if(driver.findElement(conditions_checkbox).isSelected()){
+driver.findElement(conditions_checkbox).click();
+}
+}
+
+public boolean isChecked_conditions_chec_Chk(){
+return driver.findElement(conditions_checkbox).isSelected();
 }
 
  }
