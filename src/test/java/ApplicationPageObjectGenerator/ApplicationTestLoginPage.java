@@ -1,9 +1,10 @@
-package tests;
+package ApplicationPageObjectGenerator;
 
-import Helper.PageObjectGenerator;
+import Helper.PageObjectGeneratorHelper;
 import Model.PageObjectModel;
 import Model.TagAttribute;
 import Model.TagType;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -25,11 +26,11 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public class TestLoginPage {
+public class ApplicationTestLoginPage {
     List<PageObjectModel> pageObjectModelList = new ArrayList<PageObjectModel>(); //record tags
     Object loginPage;
     WebDriver webDriver;
-    PageObjectGenerator pageObjectGenerator;
+    PageObjectGeneratorHelper pageObjectGeneratorHelper;
 
     private final String pageObjectMethodsClassPath = "./generatedCode/";
     private final String pageObjectMethodsFilePath = "./generatedCode/LoginPage.java";
@@ -50,97 +51,133 @@ public class TestLoginPage {
     private List<String> originalMethodNames;
     private List<String> newMethodNames;
 
+    static Logger logger = Logger.getLogger(ApplicationTestLoginPage.class);
+
     @Test
     public void generateJSPOM() throws IOException {
-        initializePOMList();
+        try {
+            logger.debug("Generating JS POM");
+            initializePOMList();
 
-        pageObjectGenerator = new PageObjectGenerator(className, pageObjectModelList, pageObjectMethodsJSFilePath);
-        pageObjectGenerator.generateJSPage();
+            pageObjectGeneratorHelper = new PageObjectGeneratorHelper(className, pageObjectModelList, pageObjectMethodsJSFilePath);
+            pageObjectGeneratorHelper.generateJSPage();
+
+            logger.debug("Success: Generated JS POM");
+        } catch (Exception ex) {
+            logger.error("Error generating JS POM");
+            logger.error("Exception: " + ex.getMessage());
+            logger.error("Stacktrace: " + ex.getStackTrace());
+        }
     }
 
     @Test
     public void initializeFields() throws IOException, InterruptedException, ExecutionException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(existingMethodsFilePath, false));
-        // get a list of existing locators
-        originalMethodNames = getMethodNames(getLoginPageWithDriver(false));
-        writeToTextFile(writer, originalMethodNames);
+        try {
+            logger.debug("Initializing fields");
+            BufferedWriter writer = new BufferedWriter(new FileWriter(existingMethodsFilePath, false));
 
-        initializePOMList();
+            // get a list of existing locators
+            originalMethodNames = getMethodNames(getLoginPageWithDriver(false));
+            writeToTextFile(writer, originalMethodNames);
 
-        pageObjectGenerator = new PageObjectGenerator(packageName, className, pageObjectModelList,
-                pageObjectMethodsClassPath, pageObjectMethodsFilePath, null);
-        // create/ start class composition
-        pageObjectGenerator.start();
-        // generate page fields
-        pageObjectGenerator.generatePageFields();
-        // close/ end class composition
-        pageObjectGenerator.end();
-        pageObjectGenerator.compile();
+            initializePOMList();
 
-        copyGeneratedFiles();
+            pageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, className, pageObjectModelList,
+                    pageObjectMethodsClassPath, pageObjectMethodsFilePath, null);
+            // create/ start class composition
+            pageObjectGeneratorHelper.start();
+            // generate page fields
+            pageObjectGeneratorHelper.generatePageFields();
+            // close/ end class composition
+            pageObjectGeneratorHelper.end();
+            pageObjectGeneratorHelper.compile();
+
+            copyGeneratedFiles();
         /*  compare the new locators with the earlier ones
             - if the locator is just updated (order of locator and suffix is same),
              update automation method references and generate the list
             - if a locator is added or removed, then just generate the list
         */
+            logger.debug("Success: Initialized fields");
+        } catch (Exception ex) {
+            logger.error("Error initializing fields");
+            logger.error("Exception: " + ex.getMessage());
+            logger.error("Stacktrace: " + ex.getStackTrace());
+        }
     }
 
     @Test
     public void initializeMethods() throws IOException, InterruptedException, ExecutionException {
-        loginPage = getLoginPage();
+        try {
+            logger.debug("Initializing methods");
+            loginPage = getLoginPage();
 
-        initializePOMList();
-        pageObjectGenerator = new PageObjectGenerator(packageName, className, pageObjectModelList,
-                pageObjectMethodsClassPath, pageObjectMethodsFilePath, null);
-        // generate page methods
-        pageObjectGenerator.generatePageMethods(loginPage.getClass().getDeclaredFields());
+            initializePOMList();
+            pageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, className, pageObjectModelList,
+                    pageObjectMethodsClassPath, pageObjectMethodsFilePath, null);
+            // generate page methods
+            pageObjectGeneratorHelper.generatePageMethods(loginPage.getClass().getDeclaredFields());
 
-        copyGeneratedFiles();
+            copyGeneratedFiles();
+            logger.debug("Success: Initialized methods");
+        } catch (Exception ex) {
+            logger.error("Error initializing methods");
+            logger.error("Exception: " + ex.getMessage());
+            logger.error("Stacktrace: " + ex.getStackTrace());
+        }
     }
 
     @Test
     public void valdiateLogin() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, IOException, ClassNotFoundException {
-        loginPage = getLoginPageWithDriver(true);
-        newMethodNames = getMethodNames(loginPage);
-        originalMethodNames = readFromTextFile();
-        Map<String, String> updatedMethodNames = compareMethods(originalMethodNames, newMethodNames);
-        List<String> usedMethods = readAllUsedMethods();
+        try {
+            logger.debug("Valdiating Login");
+            loginPage = getLoginPageWithDriver(true);
+            newMethodNames = getMethodNames(loginPage);
+            originalMethodNames = readFromTextFile();
+            Map<String, String> updatedMethodNames = compareMethods(originalMethodNames, newMethodNames);
+            List<String> usedMethods = readAllUsedMethods();
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(usedMethodsFilePath, false));
-        String typeUserNameMethod;
-        if (updatedMethodNames.containsKey(usedMethods.get(0))) {
-            typeUserNameMethod = updatedMethodNames.get(usedMethods.get(0));
-        } else {
-            typeUserNameMethod = usedMethods.get(0);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(usedMethodsFilePath, false));
+            String typeUserNameMethod;
+            if (updatedMethodNames.containsKey(usedMethods.get(0))) {
+                typeUserNameMethod = updatedMethodNames.get(usedMethods.get(0));
+            } else {
+                typeUserNameMethod = usedMethods.get(0);
+            }
+            writer.append(typeUserNameMethod);
+            writer.newLine();
+            Method typeUserName = loginPage.getClass().getMethod(typeUserNameMethod, String.class);
+            typeUserName.invoke(loginPage, "pradhan");
+
+            String typePasswordMethod;
+            if (updatedMethodNames.containsKey(usedMethods.get(1))) {
+                typePasswordMethod = updatedMethodNames.get(usedMethods.get(1));
+            } else {
+                typePasswordMethod = usedMethods.get(1);
+            }
+            writer.append(typePasswordMethod);
+            writer.newLine();
+            Method typePassword = loginPage.getClass().getMethod(typePasswordMethod, String.class);
+            typePassword.invoke(loginPage, "pradhan");
+
+            String clickLoginMethod;
+            if (updatedMethodNames.containsKey(usedMethods.get(2))) {
+                clickLoginMethod = updatedMethodNames.get(usedMethods.get(2));
+            } else {
+                clickLoginMethod = usedMethods.get(2);
+            }
+            writer.append(clickLoginMethod);
+            writer.newLine();
+            Method clickLogin = loginPage.getClass().getMethod(clickLoginMethod);
+            clickLogin.invoke(loginPage);
+
+            writer.close();
+            logger.debug("Success: Valdiated Login");
+        } catch (Exception ex) {
+            logger.error("Error valdiating Login");
+            logger.error("Exception: " + ex.getMessage());
+            logger.error("Stacktrace: " + ex.getStackTrace());
         }
-        writer.append(typeUserNameMethod);
-        writer.newLine();
-        Method typeUserName = loginPage.getClass().getMethod(typeUserNameMethod, String.class);
-        typeUserName.invoke(loginPage, "pradhan");
-
-        String typePasswordMethod;
-        if (updatedMethodNames.containsKey(usedMethods.get(1))) {
-            typePasswordMethod = updatedMethodNames.get(usedMethods.get(1));
-        } else {
-            typePasswordMethod = usedMethods.get(1);
-        }
-        writer.append(typePasswordMethod);
-        writer.newLine();
-        Method typePassword = loginPage.getClass().getMethod(typePasswordMethod, String.class);
-        typePassword.invoke(loginPage, "pradhan");
-
-        String clickLoginMethod;
-        if (updatedMethodNames.containsKey(usedMethods.get(2))) {
-            clickLoginMethod = updatedMethodNames.get(usedMethods.get(2));
-        } else {
-            clickLoginMethod = usedMethods.get(2);
-        }
-        writer.append(clickLoginMethod);
-        writer.newLine();
-        Method clickLogin = loginPage.getClass().getMethod(clickLoginMethod);
-        clickLogin.invoke(loginPage);
-
-        writer.close();
     }
 
     private List<String> readAllUsedMethods() throws IOException {
@@ -262,7 +299,7 @@ public class TestLoginPage {
 
     private void initializePOMList() throws IOException {
         pageObjectModelList = new ArrayList<>();
-        File file = new File("./src/main/resources/freemarker/login.ftl");
+        File file = new File("./src/main/resources/HTMLPages/login.ftl");
         Document doc = Jsoup.parse(file, "UTF-8");
 
         // all elements in html

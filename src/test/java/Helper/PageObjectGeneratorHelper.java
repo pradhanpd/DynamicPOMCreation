@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-public class PageObjectGenerator {
+public class PageObjectGeneratorHelper {
     private String pageObjectMethodsClassPath;
     private String pageObjectMethodsFilePath;
     private String pageObjectMethodsJSFilePath;
@@ -21,8 +21,8 @@ public class PageObjectGenerator {
     private String[] additionalImports;
     private List<PageObjectModel> pageObjectModelList;
 
-    public PageObjectGenerator(String packageName, String className, List<PageObjectModel> pageObjectModelList,
-                               String pageObjectMethodsClassPath, String pageObjectMethodsFilePath, String[] additionalImports) {
+    public PageObjectGeneratorHelper(String packageName, String className, List<PageObjectModel> pageObjectModelList,
+                                     String pageObjectMethodsClassPath, String pageObjectMethodsFilePath, String[] additionalImports) {
         this.packageName = packageName;
         this.className = className;
         this.additionalImports = additionalImports;
@@ -31,7 +31,7 @@ public class PageObjectGenerator {
         this.pageObjectMethodsFilePath = pageObjectMethodsFilePath;
     }
 
-    public PageObjectGenerator(String className, List<PageObjectModel> pageObjectModelList, String pageObjectMethodsJSFilePath) {
+    public PageObjectGeneratorHelper(String className, List<PageObjectModel> pageObjectModelList, String pageObjectMethodsJSFilePath) {
         this.className = className;
         this.pageObjectModelList = pageObjectModelList;
         this.pageObjectMethodsJSFilePath = pageObjectMethodsJSFilePath;

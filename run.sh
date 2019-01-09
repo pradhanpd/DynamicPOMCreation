@@ -1,2 +1,2 @@
-mvn compile exec:java -Dexec.mainClass=course.BlogController
+mvn compile exec:java -Dexec.mainClass=Application.BlogController
 

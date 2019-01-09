@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package course;
+package Application;
 
 import com.mongodb.ErrorCategory;
 import com.mongodb.MongoWriteException;

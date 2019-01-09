@@ -1,10 +1,6 @@
 Methods modified:
-click_submit_bu_Btn method name modified to: click_login_bu_Btn
 
 Methods removed:
 
 Methods added:
-select_conditions_chec_Chk
-deSelect_conditions_chec_Chk
-isChecked_conditions_chec_Chk
 

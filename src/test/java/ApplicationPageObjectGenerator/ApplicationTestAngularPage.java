@@ -1,6 +1,6 @@
-package tests;
+package ApplicationPageObjectGenerator;
 
-import Helper.PageObjectGenerator;
+import Helper.PageObjectGeneratorHelper;
 import Model.PageObjectModel;
 import Model.TagAttribute;
 import Model.TagType;
@@ -25,16 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class TestAngularPage {
+public class ApplicationTestAngularPage {
     Object page;
 
     List<PageObjectModel> indexPageObjectModelList = new ArrayList<PageObjectModel>();
     List<PageObjectModel> appPageObjectModelList = new ArrayList<PageObjectModel>();
     List<PageObjectModel> productPageObjectModelList = new ArrayList<PageObjectModel>();
 
-    PageObjectGenerator indexPageObjectGenerator;
-    PageObjectGenerator appPageObjectGenerator;
-    PageObjectGenerator productPageObjectGenerator;
+    PageObjectGeneratorHelper indexPageObjectGeneratorHelper;
+    PageObjectGeneratorHelper appPageObjectGeneratorHelper;
+    PageObjectGeneratorHelper productPageObjectGeneratorHelper;
 
     private final String pageObjectMethodsClassPath = "./generatedCode/";
 
@@ -89,30 +89,30 @@ public class TestAngularPage {
         page = getPageObject("webpages.IndexPage");
 
         indexPageObjectModelList = initializePOMList("D:\\Workshop\\Angular-GettingStarted-master\\APM\\src\\index.html");
-        indexPageObjectGenerator = new PageObjectGenerator(packageName, indexPageClassName, indexPageObjectModelList,
+        indexPageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, indexPageClassName, indexPageObjectModelList,
                 pageObjectMethodsClassPath, indexPageObjectMethodsFilePath, null);
         // generate page methods
-        indexPageObjectGenerator.generatePageMethods(page.getClass().getDeclaredFields());
+        indexPageObjectGeneratorHelper.generatePageMethods(page.getClass().getDeclaredFields());
     }
 
     private void initializeAppPageMethods() throws NoSuchMethodException, IllegalAccessException, InstantiationException, IOException, InvocationTargetException, ClassNotFoundException, InterruptedException, ExecutionException {
         page = getPageObject("webpages.AppPage");
 
         appPageObjectModelList = initializePOMList("D:\\Workshop\\Angular-GettingStarted-master\\APM\\src\\app\\app.component.html");
-        appPageObjectGenerator = new PageObjectGenerator(packageName, appPageClassName, appPageObjectModelList,
+        appPageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, appPageClassName, appPageObjectModelList,
                 pageObjectMethodsClassPath, appPageObjectMethodsFilePath, null);
         // generate page methods
-        appPageObjectGenerator.generatePageMethods(page.getClass().getDeclaredFields());
+        appPageObjectGeneratorHelper.generatePageMethods(page.getClass().getDeclaredFields());
     }
 
     private void initializeProductPageMethods() throws NoSuchMethodException, IllegalAccessException, InstantiationException, IOException, InvocationTargetException, ClassNotFoundException, InterruptedException, ExecutionException {
         page = getPageObject("webpages.ProductPage");
 
         productPageObjectModelList = initializePOMList("D:\\Workshop\\Angular-GettingStarted-master\\APM\\src\\app\\products\\product-list.component.html");
-        productPageObjectGenerator = new PageObjectGenerator(packageName, productPageClassName, productPageObjectModelList,
+        productPageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, productPageClassName, productPageObjectModelList,
                 pageObjectMethodsClassPath, productPageObjectMethodsFilePath, null);
         // generate page methods
-        productPageObjectGenerator.generatePageMethods(page.getClass().getDeclaredFields());
+        productPageObjectGeneratorHelper.generatePageMethods(page.getClass().getDeclaredFields());
     }
 
     private Object getPageObject(String className) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MalformedURLException {
@@ -125,41 +125,41 @@ public class TestAngularPage {
 
     private void initializeIndexPageFields() throws IOException, InterruptedException, ExecutionException {
         indexPageObjectModelList = initializePOMList("D:\\Workshop\\Angular-GettingStarted-master\\APM\\src\\index.html");
-        indexPageObjectGenerator = new PageObjectGenerator(packageName, indexPageClassName, indexPageObjectModelList,
+        indexPageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, indexPageClassName, indexPageObjectModelList,
                 pageObjectMethodsClassPath, indexPageObjectMethodsFilePath, null);
         // create/ start class composition
-        indexPageObjectGenerator.start();
+        indexPageObjectGeneratorHelper.start();
         // generate page fields
-        indexPageObjectGenerator.generatePageFields();
+        indexPageObjectGeneratorHelper.generatePageFields();
         // close/ end class composition
-        indexPageObjectGenerator.end();
-        indexPageObjectGenerator.compile();
+        indexPageObjectGeneratorHelper.end();
+        indexPageObjectGeneratorHelper.compile();
     }
 
     private void initializeAppPageFields() throws IOException, InterruptedException, ExecutionException {
         appPageObjectModelList = initializePOMList("D:\\Workshop\\Angular-GettingStarted-master\\APM\\src\\app\\app.component.html");
-        appPageObjectGenerator = new PageObjectGenerator(packageName, appPageClassName, appPageObjectModelList,
+        appPageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, appPageClassName, appPageObjectModelList,
                 pageObjectMethodsClassPath, appPageObjectMethodsFilePath, null);
         // create/ start class composition
-        appPageObjectGenerator.start();
+        appPageObjectGeneratorHelper.start();
         // generate page fields
-        appPageObjectGenerator.generatePageFields();
+        appPageObjectGeneratorHelper.generatePageFields();
         // close/ end class composition
-        appPageObjectGenerator.end();
-        appPageObjectGenerator.compile();
+        appPageObjectGeneratorHelper.end();
+        appPageObjectGeneratorHelper.compile();
     }
 
     private void initializeProductPageFields() throws IOException, InterruptedException, ExecutionException {
         productPageObjectModelList = initializePOMList("D:\\Workshop\\Angular-GettingStarted-master\\APM\\src\\app\\products\\product-list.component.html");
-        productPageObjectGenerator = new PageObjectGenerator(packageName, productPageClassName, productPageObjectModelList,
+        productPageObjectGeneratorHelper = new PageObjectGeneratorHelper(packageName, productPageClassName, productPageObjectModelList,
                 pageObjectMethodsClassPath, productPageObjectMethodsFilePath, null);
         // create/ start class composition
-        productPageObjectGenerator.start();
+        productPageObjectGeneratorHelper.start();
         // generate page fields
-        productPageObjectGenerator.generatePageFields();
+        productPageObjectGeneratorHelper.generatePageFields();
         // close/ end class composition
-        productPageObjectGenerator.end();
-        productPageObjectGenerator.compile();
+        productPageObjectGeneratorHelper.end();
+        productPageObjectGeneratorHelper.compile();
     }
 
     private List<PageObjectModel> initializePOMList(String filePath) throws IOException {
