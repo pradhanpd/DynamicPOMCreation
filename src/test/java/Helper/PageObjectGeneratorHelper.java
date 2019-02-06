@@ -167,10 +167,11 @@ public class PageObjectGeneratorHelper {
             } else if (tagAttribute == TagAttribute.linktext) {
                 outPageCode.newLine();
                 outPageCode.write("this." + fieldName + " = " + "element(by.linkText(\'" + pom.getTagValue() + "\'));");
-            } else if (tagAttribute == TagAttribute.xpath) {
-                outPageCode.newLine();
-                outPageCode.write("this." + fieldName + " = " + "element(by.xpath(\'" + pom.getTagValue() + "\'));");
             }
+//            else if (tagAttribute == TagAttribute.xpath) {
+//                outPageCode.newLine();
+//                outPageCode.write("this." + fieldName + " = " + "element(by.xpath(\'" + pom.getTagValue() + "\'));");
+//            }
         }
         outPageCode.newLine();
         outPageCode.close();
